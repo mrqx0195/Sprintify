@@ -1,30 +1,34 @@
 package net.mrqx.sprintify;
 
 import com.mojang.logging.LogUtils;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.mrqx.sprintify.event.AttachCapabilitiesEventHandler;
-import net.mrqx.sprintify.event.PlayerTickEventHandler;
+import net.minecraft.resources.ResourceLocation;
+import net.mrqx.sprintify.attachment.SprintifyAttachment;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import net.neoforged.neoforge.registries.RegisterEvent;
 import org.slf4j.Logger;
 
 @Mod(Sprintify.MODID)
+@EventBusSubscriber
 public class Sprintify {
     public static final String MODID = "sprintify";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    public Sprintify() {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        modEventBus.addListener(this::setup);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, SprintifyConfig.COMMON_CONFIG);
+    public Sprintify(ModContainer container) {
+        container.registerConfig(ModConfig.Type.COMMON, SprintifyConfig.COMMON_CONFIG);
     }
 
-    private void setup(FMLCommonSetupEvent event) {
-        MinecraftForge.EVENT_BUS.register(new AttachCapabilitiesEventHandler());
-        MinecraftForge.EVENT_BUS.register(new PlayerTickEventHandler());
+    @SubscribeEvent
+    public static void onRegister(RegisterEvent event) {
+        event.register(NeoForgeRegistries.ATTACHMENT_TYPES.key(), helper ->
+                helper.register(Sprintify.prefix("sprintify"), SprintifyAttachment.SPRINTIFY));
+    }
+
+    public static ResourceLocation prefix(String path) {
+        return ResourceLocation.fromNamespaceAndPath(MODID, "sprintify");
     }
 }
